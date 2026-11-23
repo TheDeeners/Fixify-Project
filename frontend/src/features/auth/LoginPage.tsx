@@ -22,7 +22,6 @@ export const LoginPage: React.FC = () => {
       const { token, user } = res.data.data;
       login(token, user);
 
-      // Redirect ตาม Role
       if (user.role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else if (user.role === 'MANAGER') {
@@ -43,69 +42,73 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full bg-surface rounded-xl shadow-lg border border-slate-200 p-8">
+      <div className="max-w-md w-full bg-surface rounded-2xl shadow-sm border border-border p-8 sm:p-10">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-accent rounded-xl mx-auto flex items-center justify-center text-primary font-black text-2xl mb-3">
+          <div className="w-12 h-12 bg-primary rounded-xl mx-auto flex items-center justify-center text-white font-bold text-xl mb-3 shadow-sm">
             F
           </div>
-          <h1 className="text-2xl font-bold text-primary">เข้าสู่ระบบ Fixify</h1>
-          <p className="text-sm text-secondary mt-1">ระบบบริหารจัดการและแจ้งซ่อมบำรุง</p>
+          <h1 className="text-2xl font-bold text-text tracking-tight">เข้าสู่ระบบ Fixify</h1>
+          <p className="text-sm text-text-muted mt-1">ระบบบริหารจัดการและแจ้งซ่อมบำรุงระดับองค์กร</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-sm rounded-lg">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">อีเมล</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              อีเมล
+            </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@fixify.com"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3.5 py-2.5 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">รหัสผ่าน</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              รหัสผ่าน
+            </label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3.5 py-2.5 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-accent hover:bg-accent-hover text-primary font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="w-full mt-2 bg-primary hover:bg-primary-hover text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50"
           >
             <LogIn className="w-4 h-4" />
             <span>{loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}</span>
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-secondary">
+        <div className="mt-6 text-center text-xs text-text-muted">
           ยังไม่มีบัญชีผู้ใช้งาน?{' '}
-          <Link to="/register" className="text-accent font-semibold hover:underline">
+          <Link to="/register" className="text-secondary font-semibold hover:underline">
             ลงทะเบียนผู้แจ้งซ่อม
           </Link>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 text-center">
-          <p className="font-medium text-slate-700 mb-1">บัญชีทดสอบในระบบ (รหัสผ่าน: password123):</p>
-          <p>Admin: admin@fixify.com</p>
-          <p>Manager A: manager.a@fixify.com</p>
-          <p>Tech A1: tech.a1@fixify.com</p>
-          <p>Requester 1: requester1@fixify.com</p>
+        <div className="mt-8 pt-5 border-t border-border text-xs text-text-muted text-center space-y-1">
+          <p className="font-medium text-text">บัญชีทดสอบเริ่มต้น (รหัสผ่าน: password123):</p>
+          <p className="text-[11px] text-text-muted">Admin: admin@fixify.com</p>
+          <p className="text-[11px] text-text-muted">Manager: manager1@fixify.com</p>
+          <p className="text-[11px] text-text-muted">Technician: tech.b1.1@fixify.com</p>
+          <p className="text-[11px] text-text-muted">Requester: requester1@fixify.com</p>
         </div>
       </div>
     </div>
