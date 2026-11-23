@@ -50,13 +50,13 @@ export const RequestListPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-text tracking-tight">
+          <h1 className="text-xl font-bold text-text tracking-tight">
             {user?.role === 'REQUESTER' ? 'รายการแจ้งซ่อมของฉัน' : 'รายการใบแจ้งซ่อมทั้งหมด'}
           </h1>
-          <p className="text-sm text-text-muted mt-1">
+          <p className="text-xs text-text-muted mt-0.5">
             ติดตามสถานะและตรวจสอบรายละเอียดความคืบหน้างานซ่อม
           </p>
         </div>
@@ -64,25 +64,25 @@ export const RequestListPage: React.FC = () => {
         {user?.role === 'REQUESTER' && (
           <Link
             to="/requests/new"
-            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+            className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-white font-medium px-3.5 py-2 rounded-lg shadow-2xs transition-colors text-xs"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>สร้างใบแจ้งซ่อม</span>
           </Link>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-surface p-4 rounded-xl shadow-sm border border-border">
-        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+      <div className="bg-surface p-3.5 rounded-xl shadow-2xs border border-border">
+        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
           <div className="sm:col-span-5 relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-text-muted" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-text-muted" />
             <input
               type="text"
               placeholder="ค้นหาตามเลขที่ใบ, หัวข้อ หรือรายละเอียด..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
             />
           </div>
 
@@ -93,7 +93,7 @@ export const RequestListPage: React.FC = () => {
                 setStatus(e.target.value);
                 setPage(1);
               }}
-              className="w-full py-2 px-3 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+              className="w-full py-1.5 px-2.5 text-xs border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
             >
               <option value="">สถานะทั้งหมด</option>
               <option value="PENDING_MANAGER">รอหัวหน้ารับงาน</option>
@@ -115,7 +115,7 @@ export const RequestListPage: React.FC = () => {
                 setPriority(e.target.value);
                 setPage(1);
               }}
-              className="w-full py-2 px-3 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+              className="w-full py-1.5 px-2.5 text-xs border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
             >
               <option value="">ความเร่งด่วนทั้งหมด</option>
               <option value="LOW">ต่ำ</option>
@@ -128,9 +128,9 @@ export const RequestListPage: React.FC = () => {
           <div className="sm:col-span-2">
             <button
               type="submit"
-              className="w-full py-2 px-4 text-sm bg-primary hover:bg-primary-hover text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors font-medium shadow-sm"
+              className="w-full py-1.5 px-3 text-xs bg-primary hover:bg-primary-hover text-white rounded-lg flex items-center justify-center gap-1 transition-colors font-medium shadow-2xs"
             >
-              <Filter className="w-4 h-4" />
+              <Filter className="w-3.5 h-3.5" />
               <span>ค้นหา</span>
             </button>
           </div>
@@ -139,58 +139,58 @@ export const RequestListPage: React.FC = () => {
 
       {/* Requests List */}
       {loading ? (
-        <div className="text-center py-16 bg-surface rounded-xl border border-border">
-          <div className="w-8 h-8 border-3 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <div className="text-center py-14 bg-surface rounded-xl border border-border">
+          <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
           <p className="text-xs text-text-muted">กำลังโหลดข้อมูลใบแจ้งซ่อม...</p>
         </div>
       ) : error ? (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 text-sm rounded-xl">
+        <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl">
           {error}
         </div>
       ) : requests.length === 0 ? (
-        <div className="text-center py-16 bg-surface rounded-xl border border-border">
-          <p className="text-base font-medium text-text">ไม่พบรายการแจ้งซ่อม</p>
-          <p className="text-xs text-text-muted mt-1">ยังไม่มีข้อมูลตามเงื่อนไขที่คุณเลือก</p>
+        <div className="text-center py-14 bg-surface rounded-xl border border-border">
+          <p className="text-sm font-semibold text-text">ไม่พบรายการแจ้งซ่อม</p>
+          <p className="text-xs text-text-muted mt-0.5">ยังไม่มีข้อมูลตามเงื่อนไขที่คุณเลือก</p>
           {user?.role === 'REQUESTER' && (
             <Link
               to="/requests/new"
-              className="mt-4 inline-flex items-center gap-2 bg-primary text-white font-medium px-4 py-2 rounded-lg text-sm shadow-sm"
+              className="mt-3 inline-flex items-center gap-1.5 bg-primary text-white font-medium px-3.5 py-1.5 rounded-lg text-xs shadow-2xs"
             >
               สร้างใบแจ้งซ่อมใหม่
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-border">
+        <div className="bg-surface rounded-xl shadow-2xs border border-border overflow-hidden divide-y divide-border">
           {requests.map((req) => (
             <Link
               key={req.id}
               to={`/requests/${req.id}`}
-              className="block p-4 sm:p-5 hover:bg-background/40 transition-colors"
+              className="block p-3.5 sm:p-4 hover:bg-background/40 transition-colors"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="space-y-1.5 flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-xs font-semibold text-secondary">
                       {req.requestNo}
                     </span>
                     <StatusBadge status={req.status as RequestStatus} />
                     <PriorityBadge priority={req.priority as Priority} />
-                    <span className="text-xs text-text-muted bg-background px-2 py-0.5 rounded border border-border">
+                    <span className="text-[10px] text-text-muted bg-background px-1.5 py-0.5 rounded border border-border">
                       {req.category?.name}
                     </span>
                   </div>
 
-                  <h3 className="text-base font-semibold text-text">{req.title}</h3>
+                  <h3 className="text-sm font-semibold text-text">{req.title}</h3>
                   <p className="text-xs text-text-muted line-clamp-1">{req.description}</p>
 
-                  <div className="flex items-center gap-4 text-xs text-text-muted pt-1">
+                  <div className="flex items-center gap-3 text-[11px] text-text-muted pt-0.5">
                     <div className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-text-light" />
+                      <MapPin className="w-3 h-3 text-text-light" />
                       <span>{req.location?.name}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-text-light" />
+                      <Calendar className="w-3 h-3 text-text-light" />
                       <span>{new Date(req.createdAt).toLocaleDateString('th-TH')}</span>
                     </div>
                     {req.technician && (
@@ -202,7 +202,7 @@ export const RequestListPage: React.FC = () => {
                 </div>
 
                 <div className="self-end sm:self-center flex items-center text-text-light hover:text-primary">
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
             </Link>
@@ -212,11 +212,11 @@ export const RequestListPage: React.FC = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 pt-2">
+        <div className="flex justify-center items-center gap-2 pt-1">
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
-            className="px-3.5 py-1.5 text-xs font-medium bg-surface border border-border text-text rounded-lg disabled:opacity-40 hover:bg-background transition-colors"
+            className="px-3 py-1 text-xs font-medium bg-surface border border-border text-text rounded-md disabled:opacity-40 hover:bg-background transition-colors"
           >
             ก่อนหน้า
           </button>
@@ -226,7 +226,7 @@ export const RequestListPage: React.FC = () => {
           <button
             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
-            className="px-3.5 py-1.5 text-xs font-medium bg-surface border border-border text-text rounded-lg disabled:opacity-40 hover:bg-background transition-colors"
+            className="px-3 py-1 text-xs font-medium bg-surface border border-border text-text rounded-md disabled:opacity-40 hover:bg-background transition-colors"
           >
             ถัดไป
           </button>
