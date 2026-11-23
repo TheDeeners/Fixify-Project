@@ -5,19 +5,19 @@ import { cn } from '../../lib/cn';
 const priorityConfig: Record<Priority, { label: string; className: string }> = {
   LOW: {
     label: 'ต่ำ',
-    className: 'bg-slate-100 text-slate-600 border-slate-300',
+    className: 'bg-stone-100 text-stone-700 border-stone-200',
   },
   MEDIUM: {
     label: 'ปานกลาง',
-    className: 'bg-blue-100 text-blue-700 border-blue-300',
+    className: 'bg-sky-50 text-sky-800 border-sky-200',
   },
   HIGH: {
     label: 'สูง',
-    className: 'bg-amber-100 text-amber-800 border-amber-300',
+    className: 'bg-amber-50 text-amber-900 border-amber-200',
   },
   URGENT: {
     label: 'เร่งด่วนที่สุด',
-    className: 'bg-red-100 text-red-700 border-red-300',
+    className: 'bg-rose-50 text-rose-900 border-rose-200',
   },
 };
 
@@ -27,13 +27,13 @@ export const PriorityBadge: React.FC<{ priority: Priority; className?: string }>
 }) => {
   const config = priorityConfig[priority] || {
     label: priority,
-    className: 'bg-gray-100 text-gray-700',
+    className: 'bg-stone-100 text-stone-700 border-stone-200',
   };
 
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border',
+        'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border tracking-wide',
         config.className,
         className
       )}

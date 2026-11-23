@@ -5,39 +5,39 @@ import { cn } from '../../lib/cn';
 const statusConfig: Record<RequestStatus, { label: string; className: string }> = {
   PENDING_MANAGER: {
     label: 'รอหัวหน้ารับงาน',
-    className: 'bg-slate-100 text-slate-700 border-slate-300',
+    className: 'bg-primary/5 text-primary border-primary/20',
   },
   ACCEPTED: {
     label: 'หัวหน้ารับเรื่องแล้ว',
-    className: 'bg-sky-100 text-sky-700 border-sky-300',
+    className: 'bg-sky-50 text-sky-800 border-sky-200/80',
   },
   ASSIGNED: {
     label: 'มอบหมายช่างแล้ว',
-    className: 'bg-blue-100 text-blue-700 border-blue-300',
+    className: 'bg-indigo-50 text-indigo-800 border-indigo-200/80',
   },
   IN_PROGRESS: {
     label: 'กำลังดำเนินการซ่อม',
-    className: 'bg-amber-100 text-amber-800 border-amber-300',
+    className: 'bg-amber-50 text-amber-900 border-amber-200/80',
   },
   WAITING_PARTS: {
     label: 'รออะไหล่',
-    className: 'bg-purple-100 text-purple-700 border-purple-300',
+    className: 'bg-purple-50 text-purple-800 border-purple-200/80',
   },
   COMPLETED: {
     label: 'ซ่อมเสร็จสิ้น',
-    className: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+    className: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
   },
   CLOSED: {
     label: 'ปิดงานเรียบร้อย',
-    className: 'bg-green-100 text-green-800 border-green-300',
+    className: 'bg-teal-50 text-teal-900 border-teal-200/80',
   },
   REJECTED: {
     label: 'ปฏิเสธงาน',
-    className: 'bg-red-100 text-red-700 border-red-300',
+    className: 'bg-rose-50 text-rose-800 border-rose-200/80',
   },
   CANCELLED: {
     label: 'ยกเลิกแล้ว',
-    className: 'bg-gray-200 text-gray-600 border-gray-300',
+    className: 'bg-stone-100 text-stone-600 border-stone-200',
   },
 };
 
@@ -47,13 +47,13 @@ export const StatusBadge: React.FC<{ status: RequestStatus; className?: string }
 }) => {
   const config = statusConfig[status] || {
     label: status,
-    className: 'bg-gray-100 text-gray-700',
+    className: 'bg-stone-100 text-stone-700 border-stone-200',
   };
 
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
+        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border tracking-wide',
         config.className,
         className
       )}

@@ -53,10 +53,10 @@ export const RequestListPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary">
+          <h1 className="text-2xl font-bold text-text tracking-tight">
             {user?.role === 'REQUESTER' ? 'รายการแจ้งซ่อมของฉัน' : 'รายการใบแจ้งซ่อมทั้งหมด'}
           </h1>
-          <p className="text-sm text-secondary mt-1">
+          <p className="text-sm text-text-muted mt-1">
             ติดตามสถานะและตรวจสอบรายละเอียดความคืบหน้างานซ่อม
           </p>
         </div>
@@ -64,7 +64,7 @@ export const RequestListPage: React.FC = () => {
         {user?.role === 'REQUESTER' && (
           <Link
             to="/requests/new"
-            className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-primary font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
             <span>สร้างใบแจ้งซ่อม</span>
@@ -73,16 +73,16 @@ export const RequestListPage: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-surface p-4 rounded-xl shadow-sm border border-slate-200">
+      <div className="bg-surface p-4 rounded-xl shadow-sm border border-border">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
           <div className="sm:col-span-5 relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-text-muted" />
             <input
               type="text"
               placeholder="ค้นหาตามเลขที่ใบ, หัวข้อ หรือรายละเอียด..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             />
           </div>
 
@@ -93,7 +93,7 @@ export const RequestListPage: React.FC = () => {
                 setStatus(e.target.value);
                 setPage(1);
               }}
-              className="w-full py-2 px-3 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-secondary"
+              className="w-full py-2 px-3 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             >
               <option value="">สถานะทั้งหมด</option>
               <option value="PENDING_MANAGER">รอหัวหน้ารับงาน</option>
@@ -115,7 +115,7 @@ export const RequestListPage: React.FC = () => {
                 setPriority(e.target.value);
                 setPage(1);
               }}
-              className="w-full py-2 px-3 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-secondary"
+              className="w-full py-2 px-3 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             >
               <option value="">ความเร่งด่วนทั้งหมด</option>
               <option value="LOW">ต่ำ</option>
@@ -128,7 +128,7 @@ export const RequestListPage: React.FC = () => {
           <div className="sm:col-span-2">
             <button
               type="submit"
-              className="w-full py-2 px-4 text-sm bg-secondary hover:bg-primary text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors font-medium"
+              className="w-full py-2 px-4 text-sm bg-primary hover:bg-primary-hover text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors font-medium shadow-sm"
             >
               <Filter className="w-4 h-4" />
               <span>ค้นหา</span>
@@ -139,69 +139,69 @@ export const RequestListPage: React.FC = () => {
 
       {/* Requests List */}
       {loading ? (
-        <div className="text-center py-12 bg-surface rounded-xl border border-slate-200">
-          <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-sm text-secondary">กำลังโหลดข้อมูลใบแจ้งซ่อม...</p>
+        <div className="text-center py-16 bg-surface rounded-xl border border-border">
+          <div className="w-8 h-8 border-3 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-xs text-text-muted">กำลังโหลดข้อมูลใบแจ้งซ่อม...</p>
         </div>
       ) : error ? (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 text-sm rounded-xl">
           {error}
         </div>
       ) : requests.length === 0 ? (
-        <div className="text-center py-16 bg-surface rounded-xl border border-slate-200">
-          <p className="text-base font-medium text-slate-700">ไม่พบรายการแจ้งซ่อม</p>
-          <p className="text-sm text-secondary mt-1">ยังไม่มีข้อมูลตามเงื่อนไขที่คุณเลือก</p>
+        <div className="text-center py-16 bg-surface rounded-xl border border-border">
+          <p className="text-base font-medium text-text">ไม่พบรายการแจ้งซ่อม</p>
+          <p className="text-xs text-text-muted mt-1">ยังไม่มีข้อมูลตามเงื่อนไขที่คุณเลือก</p>
           {user?.role === 'REQUESTER' && (
             <Link
               to="/requests/new"
-              className="mt-4 inline-flex items-center gap-2 bg-accent text-primary font-semibold px-4 py-2 rounded-lg text-sm"
+              className="mt-4 inline-flex items-center gap-2 bg-primary text-white font-medium px-4 py-2 rounded-lg text-sm shadow-sm"
             >
               สร้างใบแจ้งซ่อมใหม่
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-surface rounded-xl shadow-sm border border-slate-200 overflow-hidden divide-y divide-slate-100">
+        <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-border">
           {requests.map((req) => (
             <Link
               key={req.id}
               to={`/requests/${req.id}`}
-              className="block p-4 sm:p-5 hover:bg-slate-50 transition-colors"
+              className="block p-4 sm:p-5 hover:bg-background/40 transition-colors"
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs font-bold text-accent">
+                    <span className="font-mono text-xs font-semibold text-secondary">
                       {req.requestNo}
                     </span>
                     <StatusBadge status={req.status as RequestStatus} />
                     <PriorityBadge priority={req.priority as Priority} />
-                    <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                    <span className="text-xs text-text-muted bg-background px-2 py-0.5 rounded border border-border">
                       {req.category?.name}
                     </span>
                   </div>
 
-                  <h3 className="text-base font-semibold text-primary">{req.title}</h3>
-                  <p className="text-sm text-secondary line-clamp-1">{req.description}</p>
+                  <h3 className="text-base font-semibold text-text">{req.title}</h3>
+                  <p className="text-xs text-text-muted line-clamp-1">{req.description}</p>
 
-                  <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
+                  <div className="flex items-center gap-4 text-xs text-text-muted pt-1">
                     <div className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      <MapPin className="w-3.5 h-3.5 text-text-light" />
                       <span>{req.location?.name}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <Calendar className="w-3.5 h-3.5 text-text-light" />
                       <span>{new Date(req.createdAt).toLocaleDateString('th-TH')}</span>
                     </div>
                     {req.technician && (
-                      <span className="hidden sm:inline text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                      <span className="hidden sm:inline text-secondary font-medium">
                         ช่าง: {req.technician.name}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="self-end sm:self-center flex items-center text-slate-400 hover:text-accent">
+                <div className="self-end sm:self-center flex items-center text-text-light hover:text-primary">
                   <ChevronRight className="w-5 h-5" />
                 </div>
               </div>
@@ -216,17 +216,17 @@ export const RequestListPage: React.FC = () => {
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 text-sm bg-surface border border-slate-300 rounded-lg disabled:opacity-40"
+            className="px-3.5 py-1.5 text-xs font-medium bg-surface border border-border text-text rounded-lg disabled:opacity-40 hover:bg-background transition-colors"
           >
             ก่อนหน้า
           </button>
-          <span className="text-sm text-secondary">
+          <span className="text-xs text-text-muted">
             หน้า {page} จาก {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm bg-surface border border-slate-300 rounded-lg disabled:opacity-40"
+            className="px-3.5 py-1.5 text-xs font-medium bg-surface border border-border text-text rounded-lg disabled:opacity-40 hover:bg-background transition-colors"
           >
             ถัดไป
           </button>

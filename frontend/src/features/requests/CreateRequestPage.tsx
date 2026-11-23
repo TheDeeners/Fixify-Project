@@ -38,7 +38,6 @@ export const CreateRequestPage: React.FC = () => {
     fetchMasterData();
   }, []);
 
-  // เมื่อเลือกสถานที่ ให้โหลดทรัพย์สินของสถานที่นั้น
   useEffect(() => {
     if (locationId) {
       api.get(`/assets?locationId=${locationId}`).then((res) => {
@@ -67,7 +66,6 @@ export const CreateRequestPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. สร้าง Request
       const res = await api.post('/requests', {
         title,
         description,
@@ -79,7 +77,6 @@ export const CreateRequestPage: React.FC = () => {
 
       const newRequest = res.data.data;
 
-      // 2. แนบรูปถ่ายก่อนซ่อม (ถ้ามี)
       if (selectedFiles.length > 0) {
         const formData = new FormData();
         selectedFiles.forEach((file) => formData.append('images', file));
@@ -104,26 +101,26 @@ export const CreateRequestPage: React.FC = () => {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors"
+          className="p-2 hover:bg-surface border border-transparent hover:border-border rounded-lg text-text-muted hover:text-text transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-primary">สร้างใบแจ้งซ่อมใหม่</h1>
-          <p className="text-sm text-secondary">กรอกรายละเอียดเพื่อส่งเรื่องให้หัวหน้าอาคารดูแล</p>
+          <h1 className="text-2xl font-bold text-text tracking-tight">สร้างใบแจ้งซ่อมใหม่</h1>
+          <p className="text-sm text-text-muted">กรอกรายละเอียดเพื่อส่งเรื่องให้หัวหน้าอาคารดูแล</p>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 text-sm rounded-xl">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-surface rounded-xl shadow-sm border border-slate-200 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">
-            หัวข้องานซ่อม <span className="text-red-500">*</span>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+            หัวข้องานซ่อม <span className="text-secondary">*</span>
           </label>
           <input
             type="text"
@@ -131,20 +128,20 @@ export const CreateRequestPage: React.FC = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="เช่น แอร์ไม่เย็น, หลอดไฟกะพริบ, ก๊อกน้ำรั่ว"
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-sm"
+            className="w-full px-3.5 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
-              หมวดหมู่งานซ่อม <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              หมวดหมู่งานซ่อม <span className="text-secondary">*</span>
             </label>
             <select
               required
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-sm text-secondary"
+              className="w-full px-3.5 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             >
               <option value="">-- เลือกหมวดหมู่ --</option>
               {categories.map((c) => (
@@ -156,13 +153,13 @@ export const CreateRequestPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
-              ระดับความเร่งด่วน <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              ระดับความเร่งด่วน <span className="text-secondary">*</span>
             </label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as Priority)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-sm text-secondary"
+              className="w-full px-3.5 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             >
               <option value="LOW">ต่ำ</option>
               <option value="MEDIUM">ปานกลาง</option>
@@ -174,14 +171,14 @@ export const CreateRequestPage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
-              สถานที่ / ห้อง / จุดที่เกิดเหตุ <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              อาคาร / สถานที่ <span className="text-secondary">*</span>
             </label>
             <select
               required
               value={locationId}
               onChange={(e) => setLocationId(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-sm text-secondary"
+              className="w-full px-3.5 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             >
               <option value="">-- เลือกสถานที่ --</option>
               {locations.map((loc) => (
@@ -193,14 +190,14 @@ export const CreateRequestPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
               อุปกรณ์ / ทรัพย์สิน (ถ้ามี)
             </label>
             <select
               value={assetId}
               onChange={(e) => setAssetId(e.target.value)}
               disabled={!locationId || assets.length === 0}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-sm text-secondary disabled:bg-slate-100"
+              className="w-full px-3.5 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-background/50 disabled:text-text-muted"
             >
               <option value="">-- ไม่ระบุ / ไม่มีในรายการ --</option>
               {assets.map((a) => (
@@ -213,8 +210,8 @@ export const CreateRequestPage: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">
-            รายละเอียดปัญหา <span className="text-red-500">*</span>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+            รายละเอียดปัญหา <span className="text-secondary">*</span>
           </label>
           <textarea
             required
@@ -222,17 +219,17 @@ export const CreateRequestPage: React.FC = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="อธิบายอาการของปัญหาและจุดสังเกตเพิ่มเติมอย่างละเอียด..."
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-sm"
+            className="w-full px-3.5 py-2 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
           ></textarea>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
             แนบรูปภาพก่อนซ่อม (สูงสุด 5 รูป)
           </label>
           <div className="mt-1 flex items-center gap-3">
-            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors">
-              <Upload className="w-4 h-4 text-slate-500" />
+            <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 border border-border rounded-lg text-xs font-medium text-text bg-surface hover:bg-background transition-colors">
+              <Upload className="w-4 h-4 text-text-muted" />
               <span>เลือกรูปภาพ</span>
               <input
                 type="file"
@@ -242,7 +239,7 @@ export const CreateRequestPage: React.FC = () => {
                 className="hidden"
               />
             </label>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-text-muted">
               {selectedFiles.length > 0
                 ? `เลือกแล้ว ${selectedFiles.length} ไฟล์`
                 : 'รองรับไฟล์ JPG, PNG, WEBP ไม่เกิน 5MB'}
@@ -250,18 +247,18 @@ export const CreateRequestPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-200 flex justify-end gap-3">
+        <div className="pt-4 border-t border-border flex justify-end gap-3">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+            className="px-4 py-2 text-xs font-medium text-text-muted hover:text-text transition-colors"
           >
             ยกเลิก
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-primary font-semibold px-5 py-2.5 rounded-lg text-sm shadow-sm transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-medium px-5 py-2 rounded-lg text-sm shadow-sm transition-colors disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             <span>{loading ? 'กำลังส่งข้อมูล...' : 'ส่งใบแจ้งซ่อม'}</span>

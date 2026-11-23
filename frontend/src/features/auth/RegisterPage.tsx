@@ -42,89 +42,97 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full bg-surface rounded-xl shadow-lg border border-slate-200 p-8">
+      <div className="max-w-md w-full bg-surface rounded-2xl shadow-sm border border-border p-8 sm:p-10">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-accent rounded-xl mx-auto flex items-center justify-center text-primary font-black text-2xl mb-3">
+          <div className="w-12 h-12 bg-primary rounded-xl mx-auto flex items-center justify-center text-white font-bold text-xl mb-3 shadow-sm">
             F
           </div>
-          <h1 className="text-2xl font-bold text-primary">ลงทะเบียนผู้แจ้งซ่อม</h1>
-          <p className="text-sm text-secondary mt-1">สมัครสมาชิกสำหรับพนักงานเพื่อแจ้งซ่อมอุปกรณ์</p>
+          <h1 className="text-2xl font-bold text-text tracking-tight">ลงทะเบียนผู้แจ้งซ่อม</h1>
+          <p className="text-sm text-text-muted mt-1">สมัครสมาชิกสำหรับพนักงานเพื่อแจ้งซ่อมอุปกรณ์</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+          <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-sm rounded-lg">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg">
+          <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg">
             {success} กำลังพากลับไปหน้าเข้าสู่ระบบ...
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">ชื่อ - นามสกุล</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              ชื่อ - นามสกุล
+            </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="สมชาย ใจดี"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3.5 py-2.5 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">อีเมลองค์กร</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              อีเมลองค์กร
+            </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="somchai@company.com"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3.5 py-2.5 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">รหัสผ่าน (ขั้นต่ำ 8 ตัวอักษร)</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              รหัสผ่าน (ขั้นต่ำ 8 ตัวอักษร)
+            </label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3.5 py-2.5 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">ยืนยันรหัสผ่าน</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1.5">
+              ยืนยันรหัสผ่าน
+            </label>
             <input
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3.5 py-2.5 text-sm border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-accent hover:bg-accent-hover text-primary font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="w-full mt-2 bg-primary hover:bg-primary-hover text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50"
           >
             <UserPlus className="w-4 h-4" />
             <span>{loading ? 'กำลังลงทะเบียน...' : 'ลงทะเบียน'}</span>
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-secondary">
+        <div className="mt-6 text-center text-xs text-text-muted">
           มีบัญชีอยู่แล้ว?{' '}
-          <Link to="/login" className="text-accent font-semibold hover:underline">
+          <Link to="/login" className="text-secondary font-semibold hover:underline">
             เข้าสู่ระบบ
           </Link>
         </div>
