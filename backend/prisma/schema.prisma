@@ -1,0 +1,231 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  TECHNICIAN
+  REQUESTER
+}
+
+enum RequestStatus {
+  PENDING_MANAGER
+  ACCEPTED
+  ASSIGNED
+  IN_PROGRESS
+  WAITING_PARTS
+  COMPLETED
+  CLOSED
+  REJECTED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum LocationType {
+  BUILDING
+  FLOOR
+  ROOM
+  AREA
+}
+
+enum AttachmentStage {
+  BEFORE
+  AFTER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role
+  managerId    String?  @map("manager_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  manager            User?             @relation("ManagerTechnicians", fields: [managerId], references: [id])
+  technicians        User[]            @relation("ManagerTechnicians")
+  managedLocations   LocationManager[]
+  requestedRequests  Request[]         @relation("RequestedRequests")
+  managedRequests    Request[]         @relation("ManagedRequests")
+  assignedRequests   Request[]         @relation("AssignedRequests")
+  requestLogs        RequestLog[]
+  attachments        Attachment[]
+  notifications      Notification[]
+
+  @@index([managerId])
+  @@map("users")
+}
+
+model Location {
+  id       String       @id @default(uuid())
+  name     String
+  type     LocationType
+  parentId String?      @map("parent_id")
+
+  // Relations
+  parent          Location?        @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children        Location[]       @relation("LocationHierarchy")
+  locationManager LocationManager?
+  assets          Asset[]
+  requests        Request[]
+
+  @@map("locations")
+}
+
+model LocationManager {
+  id         String @id @default(uuid())
+  locationId String @unique @map("location_id")
+  managerId  String @map("manager_id")
+
+  // Relations
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  manager  User     @relation(fields: [managerId], references: [id], onDelete: Cascade)
+
+  @@map("location_managers")
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  requests Request[]
+
+  @@map("categories")
+}
+
+model Asset {
+  id         String @id @default(uuid())
+  name       String
+  assetCode  String @unique @map("asset_code")
+  locationId String @map("location_id")
+
+  // Relations
+  location Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  requests Request[]
+
+  @@map("assets")
+}
+
+model Request {
+  id           String        @id @default(uuid())
+  requestNo    String        @unique @map("request_no")
+  title        String
+  description  String
+  categoryId   String        @map("category_id")
+  locationId   String        @map("location_id")
+  assetId      String?       @map("asset_id")
+  priority     Priority
+  status       RequestStatus
+  requesterId  String        @map("requester_id")
+  managerId    String        @map("manager_id")
+  technicianId String?       @map("technician_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  assignedAt   DateTime?     @map("assigned_at")
+  completedAt  DateTime?     @map("completed_at")
+  closedAt     DateTime?     @map("closed_at")
+
+  // Relations
+  category      Category       @relation(fields: [categoryId], references: [id])
+  location      Location       @relation(fields: [locationId], references: [id])
+  asset         Asset?         @relation(fields: [assetId], references: [id])
+  requester     User           @relation("RequestedRequests", fields: [requesterId], references: [id])
+  manager       User           @relation("ManagedRequests", fields: [managerId], references: [id])
+  technician    User?          @relation("AssignedRequests", fields: [technicianId], references: [id])
+  requestLogs   RequestLog[]
+  attachments   Attachment[]
+  rating        Rating?
+  repairParts   RepairPart[]
+  notifications Notification[]
+
+  @@index([managerId, status])
+  @@index([technicianId, status])
+  @@index([requesterId])
+  @@index([locationId])
+  @@map("requests")
+}
+
+model RequestLog {
+  id        String         @id @default(uuid())
+  requestId String         @map("request_id")
+  userId    String         @map("user_id")
+  action    String
+  oldStatus RequestStatus? @map("old_status")
+  newStatus RequestStatus? @map("new_status")
+  note      String?
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([requestId, createdAt])
+  @@map("request_logs")
+}
+
+model Attachment {
+  id         String          @id @default(uuid())
+  requestId  String          @map("request_id")
+  uploadedBy String          @map("uploaded_by")
+  fileUrl    String          @map("file_url")
+  stage      AttachmentStage
+  createdAt  DateTime        @default(now()) @map("created_at")
+
+  // Relations
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [uploadedBy], references: [id])
+
+  @@map("attachments")
+}
+
+model Rating {
+  requestId String   @id @map("request_id")
+  score     Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@map("ratings")
+}
+
+model RepairPart {
+  id        String   @id @default(uuid())
+  requestId String   @map("request_id")
+  partName  String   @map("part_name")
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@map("repair_parts")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  requestId String   @map("request_id")
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
