@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { cn } from '../../lib/cn';
 import {
   FileText,
   Clock,
@@ -8,10 +9,56 @@ import {
   CheckCircle2,
   Calendar,
   ArrowRight,
-  TrendingUp,
   Plus,
+  Star,
+  ShieldAlert,
+  Flame,
+  Check,
+  AlertTriangle,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { StatusBadge } from '../../components/ui/StatusBadge';
+import { PriorityBadge } from '../../components/ui/PriorityBadge';
+
+// Helper แสดงสถานะสไตล์แถบ Pill ตามรูปตัวอย่าง
+const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'PENDING_MANAGER':
+      return { label: 'รอหัวหน้างาน', className: 'bg-[#FEF7EC] text-[#D97706] border-[#FDE68A]/70' };
+    case 'ACCEPTED':
+    case 'ASSIGNED':
+      return { label: 'รับเรื่องแล้ว', className: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]/70' };
+    case 'IN_PROGRESS':
+      return { label: 'กำลังซ่อม', className: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]/70' };
+    case 'WAITING_PARTS':
+      return { label: 'รออะไหล่', className: 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]/70' };
+    case 'COMPLETED':
+      return { label: 'ซ่อมเสร็จ', className: 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]/70' };
+    case 'CLOSED':
+      return { label: 'ปิดงานแล้ว', className: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]/70' };
+    case 'REJECTED':
+      return { label: 'ปฏิเสธงาน', className: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]/70' };
+    case 'CANCELLED':
+      return { label: 'ยกเลิกแล้ว', className: 'bg-[#F5F5F4] text-[#78716C] border-[#E7E5E4]' };
+    default:
+      return { label: status, className: 'bg-stone-100 text-stone-600 border-stone-200' };
+  }
+};
+
+// Helper แสดงระดับความเร่งด่วน (จุดสี + ข้อความ) ตามรูปตัวอย่าง
+const getPriorityDisplay = (priority: string) => {
+  switch (priority) {
+    case 'URGENT':
+      return { label: 'เร่งด่วนที่สุด', dotClass: 'bg-rose-500' };
+    case 'HIGH':
+      return { label: 'สูง', dotClass: 'bg-amber-500' };
+    case 'MEDIUM':
+      return { label: 'ปานกลาง', dotClass: 'bg-[#3B82F6]' };
+    case 'LOW':
+    default:
+      return { label: 'ทั่วไป', dotClass: 'bg-slate-400' };
+  }
+};
 
 export const DashboardSummaryPage: React.FC = () => {
   const { user } = useAuth();
@@ -41,119 +88,176 @@ export const DashboardSummaryPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-16 bg-surface rounded-xl border border-border">
+      <div className="text-center py-20 bg-surface rounded-xl border border-border">
         <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-        <p className="text-xs text-text-muted">กำลังโหลดแดชบอร์ด...</p>
+        <p className="text-xs text-text-muted">กำลังโหลดข้อมูลแดชบอร์ด...</p>
       </div>
     );
   }
 
   if (!summary) {
-    return <div className="text-center py-10 text-text-muted">ไม่สามารถโหลดข้อมูลได้</div>;
+    return (
+      <div className="text-center py-12 bg-surface rounded-xl border border-border text-text-muted">
+        ไม่สามารถโหลดข้อมูลสถิติได้
+      </div>
+    );
   }
 
-  const { statusCounts, totalRequests, averageRating, recentRequests } = summary;
+  const { statusCounts, totalRequests, averageRating, totalRatings, recentRequests, riskWatchlist } = summary;
+
+  // คำนวณอัตราความสำเร็จ
+  const resolvedCount = (statusCounts.COMPLETED || 0) + (statusCounts.CLOSED || 0);
+  const completionRate = totalRequests > 0 ? Math.round((resolvedCount / totalRequests) * 100) : 0;
+  const inProgressTotal = (statusCounts.IN_PROGRESS || 0) + (statusCounts.WAITING_PARTS || 0);
+
+  const priorityCounts = riskWatchlist?.priorityCounts || { URGENT: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+  const criticalRequests = riskWatchlist?.criticalRequests || [];
+  const hasCriticalRisk = criticalRequests.length > 0;
 
   return (
-    <div className="space-y-3.5">
-      {/* 1. Hero Banner Card (ลดความโค้งมนเป็น rounded-xl และลด padding) */}
-      <div className="bg-primary text-white rounded-xl p-5 sm:p-6 shadow-2xs relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1.5 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 bg-white/15 text-white/95 text-[11px] px-2.5 py-0.5 rounded-md font-medium">
-            <Calendar className="w-3 h-3" />
-            <span>{todayThai}</span>
+    <div className="space-y-2.5">
+      {/* 1. Executive Header Bar (ลดขนาดความสูงลงให้พอดี สวยงาม ไม่ใหญ่เกินไป) */}
+      <div className="bg-surface rounded-xl border border-border py-4 sm:py-4.5 px-5 sm:px-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-text-muted bg-background px-2.5 py-0.5 rounded-md border border-border">
+              <Calendar className="w-3.5 h-3.5 text-secondary" />
+              <span>{todayThai}</span>
+            </span>
+            <span className="text-[11px] font-semibold text-primary bg-[#FAF2F4] border border-secondary/20 px-2 py-0.5 rounded-md">
+              {user?.role === 'ADMIN' ? 'ภาพรวมระบบทั้งหมด' : 'ข้อมูลงานในเขตรับผิดชอบ'}
+            </span>
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            สวัสดี, คุณ{user?.name}
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-text">
+            {user?.role === 'ADMIN' ? 'แดชบอร์ดบริหารจัดการระบบ' : 'แดชบอร์ดสรุปงานทีม'}
           </h1>
-          <p className="text-xs text-white/80 font-normal leading-relaxed">
-            ยินดีต้อนรับสู่ระบบ Fixify Maintenance ขอให้เป็นวันที่การดำเนินงานราบรื่นและมีประสิทธิภาพ
+          <p className="text-xs text-text-muted">
+            ยินดีต้อนรับคุณ <span className="font-semibold text-text">{user?.name}</span> — ติดตามความคืบหน้างานซ่อมและประสิทธิภาพการบริการแบบเรียลไทม์
           </p>
         </div>
 
-        {/* Quick Action Box */}
-        <div className="bg-surface text-text rounded-lg p-3.5 shadow-sm flex items-center justify-between gap-3 min-w-[260px]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#FAF2F4] text-primary flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-[10px] text-text-muted font-medium">
-                {user?.role === 'MANAGER' ? 'คิวที่รอรับเรื่อง' : 'สถานะงานในระบบ'}
-              </div>
-              <div className="text-xs font-bold text-text">
-                {statusCounts.PENDING_MANAGER > 0
-                  ? `มี ${statusCounts.PENDING_MANAGER} รายการรอรับเรื่อง`
-                  : 'ไม่มีงานค้างรับเรื่อง'}
-              </div>
-            </div>
-          </div>
+        {/* Action Toolbar */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {statusCounts.PENDING_MANAGER > 0 && (
+            <Link
+              to={user?.role === 'MANAGER' ? '/manager/queue' : '/requests?status=PENDING_MANAGER'}
+              className="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold px-3 py-2 rounded-lg transition-colors shadow-2xs"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span>รอรับเรื่อง {statusCounts.PENDING_MANAGER} รายการ</span>
+            </Link>
+          )}
+
           <Link
-            to={user?.role === 'MANAGER' ? '/manager/queue' : '/requests'}
-            className="text-primary hover:text-primary-hover p-1 text-xs font-semibold"
+            to="/requests/new"
+            className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-2xs"
           >
-            <ArrowRight className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
+            <span>สร้างใบแจ้งซ่อม</span>
           </Link>
         </div>
       </div>
 
-      {/* 2. Main Two-Column Layout (ลด gap ระหว่างสองฝั่งเหลือ gap-3.5) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
-        {/* Left Side (8 cols) */}
-        <div className="lg:col-span-8 space-y-3.5">
-          {/* Status Metric Strip */}
-          <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-background text-primary flex items-center justify-center">
-                  <Wrench className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-text">ภาพรวมงานซ่อมบำรุง</h3>
-                  <p className="text-[10px] text-text-muted">ข้อมูลสรุปสถานะการปฏิบัติงานล่าสุด</p>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                <span>กำลังดำเนินการ {statusCounts.IN_PROGRESS} รายการ</span>
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-              <div className="p-2.5 bg-background rounded-lg border border-border text-center">
-                <span className="text-[10px] text-text-muted block">รอรับเรื่อง</span>
-                <span className="text-lg font-bold text-primary mt-0.5 block">
-                  {statusCounts.PENDING_MANAGER}
-                </span>
-              </div>
-              <div className="p-2.5 bg-background rounded-lg border border-border text-center">
-                <span className="text-[10px] text-text-muted block">กำลังซ่อม</span>
-                <span className="text-lg font-bold text-amber-800 mt-0.5 block">
-                  {statusCounts.IN_PROGRESS}
-                </span>
-              </div>
-              <div className="p-2.5 bg-background rounded-lg border border-border text-center">
-                <span className="text-[10px] text-text-muted block">รออะไหล่</span>
-                <span className="text-lg font-bold text-purple-800 mt-0.5 block">
-                  {statusCounts.WAITING_PARTS || 0}
-                </span>
-              </div>
-              <div className="p-2.5 bg-background rounded-lg border border-border text-center">
-                <span className="text-[10px] text-text-muted block">เสร็จสิ้น/ปิดงาน</span>
-                <span className="text-lg font-bold text-emerald-800 mt-0.5 block">
-                  {statusCounts.COMPLETED + statusCounts.CLOSED}
-                </span>
-              </div>
+      {/* 2. Top KPI Stat Cards (4 Cards Grid - ลดระยะห่างเหลือ gap-2.5) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+        {/* Card 1: งานทั้งหมด */}
+        <div className="bg-surface rounded-xl border border-border p-3 shadow-2xs flex flex-col justify-between hover:border-secondary/40 transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+              ใบแจ้งซ่อมทั้งหมด
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-[#FAF2F4] text-primary flex items-center justify-center">
+              <FileText className="w-3.5 h-3.5" />
             </div>
           </div>
+          <div className="mt-2">
+            <div className="text-xl font-bold tracking-tight text-text">
+              {totalRequests} <span className="text-xs font-normal text-text-muted">รายการ</span>
+            </div>
+            <div className="mt-0.5 flex items-center gap-1 text-[10px] text-text-muted">
+              <span>อัตราปิดงานสำเร็จ</span>
+              <span className="font-semibold text-emerald-800">{completionRate}%</span>
+            </div>
+          </div>
+        </div>
 
-          {/* Recent Requests Table / List */}
-          <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-border">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-primary" />
-                <h3 className="text-xs font-bold text-text">รายการใบแจ้งซ่อมล่าสุด</h3>
+        {/* Card 2: รอรับเรื่อง */}
+        <div className="bg-surface rounded-xl border border-border p-3 shadow-2xs flex flex-col justify-between hover:border-secondary/40 transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+              รอหัวหน้ารับเรื่อง
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/60 flex items-center justify-center">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <div className="text-xl font-bold tracking-tight text-text">
+              {statusCounts.PENDING_MANAGER} <span className="text-xs font-normal text-text-muted">รายการ</span>
+            </div>
+            <div className="mt-0.5 flex items-center gap-1 text-[10px] text-amber-800 font-medium">
+              <AlertTriangle className="w-3 h-3 text-amber-600" />
+              <span>{statusCounts.PENDING_MANAGER > 0 ? 'ต้องการการตอบรับ' : 'ไม่มีงานคั่งค้าง'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: กำลังซ่อมบำรุง */}
+        <div className="bg-surface rounded-xl border border-border p-3 shadow-2xs flex flex-col justify-between hover:border-secondary/40 transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+              กำลังดำเนินการซ่อม
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-800 border border-sky-200/60 flex items-center justify-center">
+              <Wrench className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <div className="text-xl font-bold tracking-tight text-text">
+              {inProgressTotal} <span className="text-xs font-normal text-text-muted">รายการ</span>
+            </div>
+            <div className="mt-0.5 text-[10px] text-text-muted">
+              กำลังซ่อม <span className="font-medium text-text">{statusCounts.IN_PROGRESS}</span> / รออะไหล่ <span className="font-medium text-text">{statusCounts.WAITING_PARTS || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: ปิดงานสำเร็จ & ความพึงพอใจ */}
+        <div className="bg-surface rounded-xl border border-border p-3 shadow-2xs flex flex-col justify-between hover:border-secondary/40 transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+              ปิดงานเรียบร้อย
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/60 flex items-center justify-center">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <div className="text-xl font-bold tracking-tight text-text">
+              {resolvedCount} <span className="text-xs font-normal text-text-muted">รายการ</span>
+            </div>
+            <div className="mt-0.5 flex items-center gap-1 text-[10px] text-text-muted">
+              <span className="text-amber-500 font-semibold flex items-center gap-0.5">
+                ★ {averageRating}
+              </span>
+              <span>จาก {totalRatings} การประเมิน</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Main Split Section (8 cols : 4 cols - กระชับและแนบชิดกัน) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-start">
+        {/* Left Side: Recent Requests List (8 Cols) */}
+        <div className="lg:col-span-8 space-y-2.5">
+          <div className="bg-surface rounded-xl border border-border shadow-2xs overflow-hidden">
+            <div className="p-3 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <h3 className="text-xs font-bold text-text uppercase tracking-wider">
+                  รายการใบแจ้งซ่อมล่าสุด
+                </h3>
               </div>
               <Link
                 to="/requests"
@@ -164,109 +268,219 @@ export const DashboardSummaryPage: React.FC = () => {
               </Link>
             </div>
 
-            <div className="divide-y divide-border">
+            {/* List Table: สไตล์แถวเรียบหรูตามรูปตัวอย่าง */}
+            <div className="divide-y divide-border/70">
               {recentRequests.length === 0 ? (
-                <p className="text-xs text-text-muted py-5 text-center">
+                <div className="py-10 text-center text-xs text-text-muted">
                   ยังไม่มีประวัติใบแจ้งซ่อมในระบบ
-                </p>
+                </div>
               ) : (
-                recentRequests.map((r: any) => (
-                  <div key={r.id} className="py-2.5 flex items-center justify-between text-xs hover:bg-background/40 transition-colors px-1.5 rounded-md">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-text text-xs">{r.title}</span>
-                        <span className="text-[10px] text-text-muted bg-background px-1.5 py-0.5 rounded border border-border">
-                          {r.category?.name}
-                        </span>
+                recentRequests.map((req: any) => {
+                  const statusInfo = getStatusDisplay(req.status);
+                  const priorityInfo = getPriorityDisplay(req.priority);
+
+                  return (
+                    <div
+                      key={req.id}
+                      className="py-3.5 px-4 sm:px-5 hover:bg-background/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
+                    >
+                      {/* คอลัมน์ที่ 1: รหัสใบแจ้งซ่อม & ป้ายสถานะ */}
+                      <div className="w-28 sm:w-32 flex-shrink-0 space-y-1">
+                        <div className="font-mono text-xs font-semibold text-[#8C7A77]">
+                          {req.requestNo}
+                        </div>
+                        <div>
+                          <span
+                            className={cn(
+                              'inline-block px-2.5 py-0.5 rounded-full text-[11px] font-medium border tracking-wide',
+                              statusInfo.className
+                            )}
+                          >
+                            {statusInfo.label}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-[10px] text-text-muted flex items-center gap-2">
-                        <span>อาคาร: {r.location?.name}</span>
-                        <span>•</span>
-                        <span>ผู้แจ้ง: {r.requester?.name}</span>
+
+                      {/* คอลัมน์ที่ 2: ชื่องาน & รายละเอียดสถานที่ หมวดหมู่ ผู้แจ้ง */}
+                      <div className="flex-1 min-w-0 sm:pr-3">
+                        <h4 className="text-sm font-bold text-text truncate leading-snug">
+                          {req.title}
+                        </h4>
+                        <p className="text-xs text-text-muted mt-1 truncate">
+                          <span>{req.location?.name || 'ไม่ระบุสถานที่'}</span>
+                          <span className="mx-1.5 text-text-muted/60">·</span>
+                          <span>{req.category?.name || 'ทั่วไป'}</span>
+                          <span className="mx-1.5 text-text-muted/60">·</span>
+                          <span>ผู้แจ้ง {req.requester?.name || 'ไม่ระบุ'}</span>
+                        </p>
+                      </div>
+
+                      {/* คอลัมน์ที่ 3 & 4: ระดับความเร่งด่วน + ปุ่มดูรายละเอียด */}
+                      <div className="flex items-center justify-between sm:justify-end gap-4 flex-shrink-0 pt-1 sm:pt-0">
+                        {/* ระดับความเร่งด่วน (จุดสี + ข้อความ) */}
+                        <div className="flex items-center gap-1.5 text-xs text-text-muted whitespace-nowrap">
+                          <span
+                            className={cn(
+                              'w-2 h-2 rounded-full flex-shrink-0',
+                              priorityInfo.dotClass
+                            )}
+                          />
+                          <span>{priorityInfo.label}</span>
+                        </div>
+
+                        {/* ปุ่มดูรายละเอียด */}
+                        <Link
+                          to={`/requests/${req.id}`}
+                          className="inline-block px-4 py-1.5 rounded-xl border border-border bg-white hover:bg-[#FAF2F4] text-xs font-medium text-primary hover:border-primary/40 transition-all shadow-2xs whitespace-nowrap"
+                        >
+                          ดูรายละเอียด
+                        </Link>
                       </div>
                     </div>
-                    <Link
-                      to={`/requests/${r.id}`}
-                      className="text-xs text-primary font-medium hover:underline ml-2"
-                    >
-                      ตรวจสอบ
-                    </Link>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
         </div>
 
-        {/* Right Side (4 cols) */}
-        <div className="lg:col-span-4 space-y-3.5">
-          <div className="bg-surface rounded-xl border border-border p-4 shadow-2xs space-y-3.5">
-            {/* Header การ์ด */}
-            <div className="flex items-center justify-between">
+        {/* Right Side: ตัวชี้วัดงานวิกฤตและความเสี่ยง + คะแนนความพึงพอใจ (4 Cols) */}
+        <div className="lg:col-span-4 space-y-2.5">
+          {/* Card: ตัวชี้วัดงานวิกฤตและความเสี่ยง (Critical Priority & Risk Watchlist) */}
+          <div className="bg-surface rounded-xl border border-border p-3.5 shadow-2xs space-y-2.5">
+            <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-primary" />
-                <h3 className="text-xs font-bold text-text">สถิติงวดปัจจุบัน</h3>
+                <ShieldAlert className="w-3.5 h-3.5 text-primary" />
+                <h3 className="text-[11px] font-bold text-text uppercase tracking-wider">
+                  ตัวชี้วัดงานวิกฤตและความเสี่ยง
+                </h3>
               </div>
-              <span className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold">
-                • 2569
-              </span>
+              {hasCriticalRisk ? (
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-900 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full animate-pulse">
+                  <Flame className="w-2.5 h-2.5 text-rose-600" />
+                  <span>เฝ้าระวัง ({criticalRequests.length})</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  <Check className="w-2.5 h-2.5 text-emerald-600" />
+                  <span>สภาวะปกติ</span>
+                </span>
+              )}
             </div>
 
-            {/* Big Stat Count */}
-            <div className="bg-background rounded-lg p-3 border border-border text-center">
-              <div className="text-2xl font-black text-text tracking-tight">
-                {totalRequests}{' '}
-                <span className="text-xs text-text-muted font-normal">/ ทั้งหมด</span>
+            {/* Priority Distribution Matrix */}
+            <div>
+              <div className="text-[10px] font-bold text-text-light uppercase tracking-wider mb-1.5">
+                การกระจายตามระดับความเร่งด่วน
               </div>
-              <div className="text-[11px] text-text-muted mt-0.5">
-                ปิดงานสมบูรณ์แล้ว {statusCounts.CLOSED} ใบ
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                {/* URGENT */}
+                <div className="p-2 bg-rose-50/60 border border-rose-200/80 rounded-md flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-rose-900 block leading-tight">เร่งด่วนที่สุด</span>
+                    <span className="text-[9px] text-rose-700/80">URGENT</span>
+                  </div>
+                  <span className="text-sm font-black text-rose-900">
+                    {priorityCounts.URGENT || 0}
+                  </span>
+                </div>
+
+                {/* HIGH */}
+                <div className="p-2 bg-amber-50/60 border border-amber-200/80 rounded-md flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-amber-900 block leading-tight">สูง</span>
+                    <span className="text-[9px] text-amber-700/80">HIGH</span>
+                  </div>
+                  <span className="text-sm font-black text-amber-900">
+                    {priorityCounts.HIGH || 0}
+                  </span>
+                </div>
+
+                {/* MEDIUM */}
+                <div className="p-2 bg-sky-50/60 border border-sky-200/80 rounded-md flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-sky-900 block leading-tight">ปานกลาง</span>
+                    <span className="text-[9px] text-sky-700/80">MEDIUM</span>
+                  </div>
+                  <span className="text-sm font-black text-sky-900">
+                    {priorityCounts.MEDIUM || 0}
+                  </span>
+                </div>
+
+                {/* LOW */}
+                <div className="p-2 bg-stone-100/70 border border-stone-200/80 rounded-md flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-stone-700 block leading-tight">ต่ำ</span>
+                    <span className="text-[9px] text-stone-500">LOW</span>
+                  </div>
+                  <span className="text-sm font-black text-stone-800">
+                    {priorityCounts.LOW || 0}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Breakdown List */}
-            <div className="space-y-2 text-xs">
-              <div className="text-[10px] font-bold text-text-light uppercase tracking-wider">
-                สัดส่วนตามประเภท
+            {/* Critical Unresolved Watchlist */}
+            <div className="space-y-1.5 pt-1 border-t border-border">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-text-light uppercase tracking-wider">
+                  งานด่วนที่ยังไม่ปิดงาน
+                </span>
+                <span className="text-[10px] text-text-muted">
+                  {criticalRequests.length} งาน
+                </span>
               </div>
 
-              <div className="p-2 bg-background/60 rounded-lg border border-border flex items-center justify-between">
-                <span className="text-text font-medium text-[11px]">รอการตอบรับ</span>
-                <span className="font-bold text-primary text-[11px]">{statusCounts.PENDING_MANAGER} ใบ</span>
-              </div>
-
-              <div className="p-2 bg-background/60 rounded-lg border border-border flex items-center justify-between">
-                <span className="text-text font-medium text-[11px]">อยู่ระหว่างดำเนินการ</span>
-                <span className="font-bold text-amber-800 text-[11px]">{statusCounts.IN_PROGRESS} ใบ</span>
-              </div>
-
-              <div className="p-2 bg-background/60 rounded-lg border border-border flex items-center justify-between">
-                <span className="text-text font-medium text-[11px]">ปิดงานเสร็จสิ้น</span>
-                <span className="font-bold text-emerald-800 text-[11px]">{statusCounts.CLOSED} ใบ</span>
-              </div>
-
-              <div className="p-2 bg-background/60 rounded-lg border border-border flex items-center justify-between">
-                <span className="text-text font-medium text-[11px]">คะแนนความพึงพอใจ</span>
-                <span className="font-bold text-amber-600 text-[11px]">⭐ {averageRating} / 5.0</span>
-              </div>
+              {criticalRequests.length === 0 ? (
+                <div className="p-2.5 bg-emerald-50/50 border border-emerald-200/60 rounded-md text-center space-y-0.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto" />
+                  <p className="text-[11px] font-semibold text-emerald-900">
+                    ไม่มีงานระดับวิกฤตคั่งค้าง
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {criticalRequests.map((req: any) => (
+                    <Link
+                      key={req.id}
+                      to={`/requests/${req.id}`}
+                      className="block p-2 bg-background/70 hover:bg-background border border-border hover:border-secondary/30 rounded-md transition-colors group"
+                    >
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="font-mono text-[9px] font-bold text-secondary">
+                          {req.requestNo}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <PriorityBadge priority={req.priority} />
+                          <StatusBadge status={req.status} />
+                        </div>
+                      </div>
+                      <h5 className="text-[11px] font-semibold text-text truncate group-hover:text-primary transition-colors">
+                        {req.title}
+                      </h5>
+                      <span className="text-[9px] text-text-muted block mt-0.5 truncate">
+                        {req.locationName}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            {/* Main Action Button */}
-            <div className="pt-1 space-y-2 text-center">
-              <Link
-                to="/requests/new"
-                className="w-full inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-hover text-white font-medium py-2 px-3 rounded-lg text-xs shadow-2xs transition-all"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ สร้างใบแจ้งซ่อมใหม่</span>
-              </Link>
-
-              <Link
-                to="/requests"
-                className="text-[11px] text-primary font-semibold hover:underline block"
-              >
-                ดูประวัติและรายละเอียดทั้งหมด →
-              </Link>
+          {/* Card: คะแนนความพึงพอใจการบริการ */}
+          <div className="bg-surface rounded-xl border border-border p-3 shadow-2xs text-center space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+              คะแนนความพึงพอใจการให้บริการ
+            </span>
+            <div className="flex items-center justify-center gap-1 text-amber-500">
+              <Star className="w-5 h-5 fill-amber-400" />
+              <span className="text-2xl font-extrabold text-text">{averageRating}</span>
+              <span className="text-xs text-text-muted font-normal self-end mb-0.5">/ 5.0</span>
             </div>
+            <p className="text-[10px] text-text-muted">
+              คำนวณจากแบบประเมินทั้งหมด {totalRatings} ครั้ง
+            </p>
           </div>
         </div>
       </div>

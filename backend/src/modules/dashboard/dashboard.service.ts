@@ -1,4 +1,4 @@
-import { Prisma, Role } from '@prisma/client';
+import { Prisma, Role, RequestStatus, Priority } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../utils/app-error';
 
@@ -23,6 +23,9 @@ export class DashboardService {
       rejectedCount,
       ratings,
       recentRequests,
+      categoryStats,
+      priorityGroup,
+      criticalRequests,
     ] = await Promise.all([
       prisma.request.count({ where }),
       prisma.request.count({ where: { ...where, status: 'PENDING_MANAGER' } }),
@@ -38,7 +41,7 @@ export class DashboardService {
       }),
       prisma.request.findMany({
         where,
-        take: 5,
+        take: 6,
         orderBy: { createdAt: 'desc' },
         include: {
           category: { select: { name: true } },
@@ -46,7 +49,59 @@ export class DashboardService {
           requester: { select: { name: true } },
         },
       }),
+      prisma.category.findMany({
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: {
+              requests: {
+                where,
+              },
+            },
+          },
+        },
+        orderBy: { name: 'asc' },
+      }),
+      // สถิติแยกตามความเร่งด่วน (Priority Distribution)
+      prisma.request.groupBy({
+        by: ['priority'],
+        where,
+        _count: { priority: true },
+      }),
+      // งานวิกฤตและความเสี่ยง (URGENT หรือ HIGH ที่ยังไม่ปิดงานและยังไม่เสร็จ)
+      prisma.request.findMany({
+        where: {
+          ...where,
+          priority: { in: [Priority.URGENT, Priority.HIGH] },
+          status: {
+            notIn: [
+              RequestStatus.CLOSED,
+              RequestStatus.COMPLETED,
+              RequestStatus.CANCELLED,
+              RequestStatus.REJECTED,
+            ],
+          },
+        },
+        take: 4,
+        orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+        include: {
+          location: { select: { name: true } },
+          category: { select: { name: true } },
+        },
+      }),
     ]);
+
+    // จัดระเบียบ Priority Counts ให้ครบทุกระดับ
+    const priorityMap: Record<string, number> = {
+      URGENT: 0,
+      HIGH: 0,
+      MEDIUM: 0,
+      LOW: 0,
+    };
+    priorityGroup.forEach((p) => {
+      priorityMap[p.priority] = p._count.priority;
+    });
 
     return {
       totalRequests,
@@ -61,6 +116,25 @@ export class DashboardService {
       averageRating: ratings._avg.score ? Number(ratings._avg.score.toFixed(1)) : 0,
       totalRatings: ratings._count.score,
       recentRequests,
+      categoryStats: categoryStats.map((c) => ({
+        id: c.id,
+        name: c.name,
+        count: c._count.requests,
+      })),
+      riskWatchlist: {
+        priorityCounts: priorityMap,
+        criticalUnresolvedCount: criticalRequests.length,
+        criticalRequests: criticalRequests.map((r) => ({
+          id: r.id,
+          requestNo: r.requestNo,
+          title: r.title,
+          priority: r.priority,
+          status: r.status,
+          locationName: r.location?.name,
+          categoryName: r.category?.name,
+          createdAt: r.createdAt,
+        })),
+      },
     };
   }
 }

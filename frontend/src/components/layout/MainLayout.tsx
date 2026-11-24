@@ -5,12 +5,13 @@ import { Sidebar } from './Sidebar';
 
 export const MainLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans">
+    <div className="h-screen flex flex-col bg-background font-sans overflow-hidden">
       <Navbar />
-      {/* ทั้ง Sidebar และ Content อยู่ชิดติดกันด้วย gap-3.5 และจัดกึ่งกลางรวมกันใน max-w-[1440px] */}
-      <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 py-3.5 flex gap-3.5 items-start">
+      {/* items-start ทำให้ Sidebar มีความสูงตามคอนเทนต์ตัวเอง (h-fit) ไม่ถูกดึงยืดยาวถึงด้านล่าง */}
+      <div className="flex-1 w-full max-w-[1440px] mx-auto px-3.5 pt-2 pb-2 flex gap-2.5 items-start overflow-hidden">
         <Sidebar />
-        <main className="flex-1 min-w-0">
+        {/* Main Content เลื่อนอิสระ */}
+        <main className="flex-1 min-w-0 h-full overflow-y-auto pr-1 pb-6">
           <Outlet />
         </main>
       </div>
