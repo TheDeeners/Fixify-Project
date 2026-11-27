@@ -10,15 +10,9 @@ import {
   Calendar,
   ArrowRight,
   Plus,
-  Star,
-  ShieldAlert,
-  Flame,
-  Check,
   AlertTriangle,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { StatusBadge } from '../../components/ui/StatusBadge';
-import { PriorityBadge } from '../../components/ui/PriorityBadge';
 
 // Helper แสดงสถานะสไตล์แถบ Pill ตามรูปตัวอย่าง
 const getStatusDisplay = (status: string) => {
@@ -112,7 +106,38 @@ export const DashboardSummaryPage: React.FC = () => {
 
   const priorityCounts = riskWatchlist?.priorityCounts || { URGENT: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
   const criticalRequests = riskWatchlist?.criticalRequests || [];
-  const hasCriticalRisk = criticalRequests.length > 0;
+  const priorityTotal =
+    (priorityCounts.URGENT || 0) +
+    (priorityCounts.HIGH || 0) +
+    (priorityCounts.MEDIUM || 0) +
+    (priorityCounts.LOW || 0);
+
+  // คำนวณข้อมูลสำหรับ Donut Chart (รัศมี 38, เส้นรอบวง C ≈ 238.76)
+  const donutRadius = 38;
+  const circumference = 2 * Math.PI * donutRadius;
+
+  const priorityMeta = [
+    { key: 'URGENT', label: 'เร่งด่วนที่สุด', count: priorityCounts.URGENT || 0, color: '#EF4444' },
+    { key: 'HIGH', label: 'สูง', count: priorityCounts.HIGH || 0, color: '#EA580C' },
+    { key: 'MEDIUM', label: 'ปานกลาง', count: priorityCounts.MEDIUM || 0, color: '#2563EB' },
+    { key: 'LOW', label: 'ต่ำ', count: priorityCounts.LOW || 0, color: '#94A3B8' },
+  ];
+
+  let accumulatedLength = 0;
+  const donutSegments = priorityMeta.map((item) => {
+    const ratio = priorityTotal > 0 ? item.count / priorityTotal : 0;
+    const strokeLength = ratio * circumference;
+    const strokeOffset = accumulatedLength;
+    const percent = priorityTotal > 0 ? Math.round(ratio * 100) : 0;
+    accumulatedLength += strokeLength;
+
+    return {
+      ...item,
+      strokeLength,
+      strokeOffset,
+      percent,
+    };
+  });
 
   return (
     <div className="space-y-2.5">
@@ -344,142 +369,168 @@ export const DashboardSummaryPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Side: ตัวชี้วัดงานวิกฤตและความเสี่ยง + คะแนนความพึงพอใจ (4 Cols) */}
+        {/* Right Side: ความเร่งด่วนของงาน + ความพึงพอใจในการให้บริการ (ตามรูปตัวอย่าง) */}
         <div className="lg:col-span-4 space-y-2.5">
-          {/* Card: ตัวชี้วัดงานวิกฤตและความเสี่ยง (Critical Priority & Risk Watchlist) */}
-          <div className="bg-surface rounded-xl border border-border p-3.5 shadow-2xs space-y-2.5">
-            <div className="flex items-center justify-between pb-2 border-b border-border">
-              <div className="flex items-center gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 text-primary" />
-                <h3 className="text-[11px] font-bold text-text uppercase tracking-wider">
-                  ตัวชี้วัดงานวิกฤตและความเสี่ยง
-                </h3>
-              </div>
-              {hasCriticalRisk ? (
-                <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-900 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full animate-pulse">
-                  <Flame className="w-2.5 h-2.5 text-rose-600" />
-                  <span>เฝ้าระวัง ({criticalRequests.length})</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  <Check className="w-2.5 h-2.5 text-emerald-600" />
-                  <span>สภาวะปกติ</span>
-                </span>
-              )}
+          {/* Card 1: ความเร่งด่วนของงาน (Donut Chart สไตล์ผู้บริหาร) */}
+          <div className="bg-surface rounded-2xl border border-border p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-text">
+                ความเร่งด่วนของงาน
+              </h3>
+              <span className="text-[11px] font-medium text-text-muted bg-background px-2.5 py-0.5 rounded-md border border-border">
+                ทั้งหมด {priorityTotal} งาน
+              </span>
             </div>
 
-            {/* Priority Distribution Matrix */}
-            <div>
-              <div className="text-[10px] font-bold text-text-light uppercase tracking-wider mb-1.5">
-                การกระจายตามระดับความเร่งด่วน
+            {/* Donut Chart & Legend Matrix */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 py-1">
+              {/* SVG Donut Ring */}
+              <div className="relative w-32 h-32 flex-shrink-0 flex items-center justify-center">
+                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+                  {/* Track Circle */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r={donutRadius}
+                    stroke="#EFE9E6"
+                    strokeWidth="11"
+                    fill="transparent"
+                  />
+
+                  {/* Slices */}
+                  {priorityTotal > 0 &&
+                    donutSegments.map(
+                      (segment) =>
+                        segment.count > 0 && (
+                          <circle
+                            key={segment.key}
+                            cx="50"
+                            cy="50"
+                            r={donutRadius}
+                            stroke={segment.color}
+                            strokeWidth="11"
+                            fill="transparent"
+                            strokeDasharray={`${segment.strokeLength} ${circumference}`}
+                            strokeDashoffset={-segment.strokeOffset}
+                            className="transition-all duration-700 ease-out"
+                          />
+                        )
+                    )}
+                </svg>
+
+                {/* Center Summary Text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span className="text-2xl font-black text-text leading-none tracking-tight">
+                    {priorityTotal}
+                  </span>
+                  <span className="text-[10px] text-text-muted font-medium mt-1">
+                    งานทั้งหมด
+                  </span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 text-xs">
-                {/* URGENT */}
-                <div className="p-2 bg-rose-50/60 border border-rose-200/80 rounded-md flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-rose-900 block leading-tight">เร่งด่วนที่สุด</span>
-                    <span className="text-[9px] text-rose-700/80">URGENT</span>
-                  </div>
-                  <span className="text-sm font-black text-rose-900">
-                    {priorityCounts.URGENT || 0}
-                  </span>
-                </div>
 
-                {/* HIGH */}
-                <div className="p-2 bg-amber-50/60 border border-amber-200/80 rounded-md flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-amber-900 block leading-tight">สูง</span>
-                    <span className="text-[9px] text-amber-700/80">HIGH</span>
+              {/* Legend รายการ 4 ระดับ พร้อมตัวเลขและ % ชัดเจน */}
+              <div className="flex-1 w-full space-y-2">
+                {donutSegments.map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex items-center justify-between text-xs py-0.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-text font-medium text-xs">{item.label}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono text-xs">
+                      <span className="font-bold text-text">{item.count}</span>
+                      <span className="text-[10px] text-text-muted font-sans">
+                        ({item.percent}%)
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-sm font-black text-amber-900">
-                    {priorityCounts.HIGH || 0}
-                  </span>
-                </div>
-
-                {/* MEDIUM */}
-                <div className="p-2 bg-sky-50/60 border border-sky-200/80 rounded-md flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-sky-900 block leading-tight">ปานกลาง</span>
-                    <span className="text-[9px] text-sky-700/80">MEDIUM</span>
-                  </div>
-                  <span className="text-sm font-black text-sky-900">
-                    {priorityCounts.MEDIUM || 0}
-                  </span>
-                </div>
-
-                {/* LOW */}
-                <div className="p-2 bg-stone-100/70 border border-stone-200/80 rounded-md flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-stone-700 block leading-tight">ต่ำ</span>
-                    <span className="text-[9px] text-stone-500">LOW</span>
-                  </div>
-                  <span className="text-sm font-black text-stone-800">
-                    {priorityCounts.LOW || 0}
-                  </span>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Critical Unresolved Watchlist */}
-            <div className="space-y-1.5 pt-1 border-t border-border">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-text-light uppercase tracking-wider">
-                  งานด่วนที่ยังไม่ปิดงาน
-                </span>
-                <span className="text-[10px] text-text-muted">
-                  {criticalRequests.length} งาน
-                </span>
+            {/* Divider and งานด่วนที่ยังไม่ปิดงาน */}
+            <div className="pt-3 border-t border-border/70 space-y-2.5">
+              <div className="text-[11px] text-text-muted">
+                งานด่วนที่ยังไม่ปิดงาน · {criticalRequests.length} งาน
               </div>
 
               {criticalRequests.length === 0 ? (
-                <div className="p-2.5 bg-emerald-50/50 border border-emerald-200/60 rounded-md text-center space-y-0.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto" />
-                  <p className="text-[11px] font-semibold text-emerald-900">
-                    ไม่มีงานระดับวิกฤตคั่งค้าง
-                  </p>
+                <div className="py-2 text-[11px] text-text-muted text-center">
+                  ไม่มีงานระดับวิกฤตคั่งค้าง
                 </div>
               ) : (
-                <div className="space-y-1">
-                  {criticalRequests.map((req: any) => (
-                    <Link
-                      key={req.id}
-                      to={`/requests/${req.id}`}
-                      className="block p-2 bg-background/70 hover:bg-background border border-border hover:border-secondary/30 rounded-md transition-colors group"
-                    >
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className="font-mono text-[9px] font-bold text-secondary">
-                          {req.requestNo}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <PriorityBadge priority={req.priority} />
-                          <StatusBadge status={req.status} />
+                <div className="space-y-3">
+                  {criticalRequests.map((req: any) => {
+                    const statusInfo = getStatusDisplay(req.status);
+                    const priorityInfo = getPriorityDisplay(req.priority);
+
+                    return (
+                      <Link
+                        key={req.id}
+                        to={`/requests/${req.id}`}
+                        className="block group transition-colors"
+                      >
+                        <div className="font-mono text-[11px] text-text-muted">
+                          {req.requestNo} · {priorityInfo.label}
                         </div>
-                      </div>
-                      <h5 className="text-[11px] font-semibold text-text truncate group-hover:text-primary transition-colors">
-                        {req.title}
-                      </h5>
-                      <span className="text-[9px] text-text-muted block mt-0.5 truncate">
-                        {req.locationName}
-                      </span>
-                    </Link>
-                  ))}
+                        <h5 className="text-xs font-bold text-text group-hover:text-primary transition-colors leading-snug mt-0.5 line-clamp-2">
+                          {req.title}
+                        </h5>
+                        <div className="flex items-center gap-1.5 text-[11px] text-text-muted mt-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                          <span>{statusInfo.label}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Card: คะแนนความพึงพอใจการบริการ */}
-          <div className="bg-surface rounded-xl border border-border p-3 shadow-2xs text-center space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-              คะแนนความพึงพอใจการให้บริการ
-            </span>
-            <div className="flex items-center justify-center gap-1 text-amber-500">
-              <Star className="w-5 h-5 fill-amber-400" />
-              <span className="text-2xl font-extrabold text-text">{averageRating}</span>
-              <span className="text-xs text-text-muted font-normal self-end mb-0.5">/ 5.0</span>
+          {/* Card 2: ความพึงพอใจในการให้บริการ */}
+          <div className="bg-surface rounded-2xl border border-border p-5 shadow-2xs space-y-3">
+            <h3 className="text-sm font-bold text-text">
+              ความพึงพอใจในการให้บริการ
+            </h3>
+
+            <div className="flex items-baseline gap-1">
+              <span className="text-4xl font-extrabold text-text tracking-tight leading-none">
+                {averageRating || 0}
+              </span>
+              <span className="text-sm text-text-muted font-normal">
+                / 5.0
+              </span>
             </div>
-            <p className="text-[10px] text-text-muted">
-              คำนวณจากแบบประเมินทั้งหมด {totalRatings} ครั้ง
+
+            {/* 5 Segmented Bars */}
+            <div className="flex items-center gap-1.5 pt-1">
+              {[1, 2, 3, 4, 5].map((index) => {
+                const fillPercentage =
+                  Math.max(0, Math.min(1, (averageRating || 0) - (index - 1))) * 100;
+
+                return (
+                  <div
+                    key={index}
+                    className="h-1.5 flex-1 bg-[#EFE9E6] rounded-full overflow-hidden"
+                  >
+                    <div
+                      className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                      style={{ width: `${fillPercentage}%` }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-[11px] text-text-muted pt-0.5">
+              คำนวณจากแบบประเมินทั้งหมด {totalRatings || 0} ครั้ง
             </p>
           </div>
         </div>

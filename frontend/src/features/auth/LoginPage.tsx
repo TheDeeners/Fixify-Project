@@ -106,9 +106,9 @@ export const LoginPage: React.FC = () => {
         <div className="mt-8 pt-5 border-t border-border text-xs text-text-muted text-center space-y-1">
           <p className="font-medium text-text">บัญชีทดสอบเริ่มต้น (รหัสผ่าน: password123):</p>
           <p className="text-[11px] text-text-muted">Admin: admin@fixify.com</p>
-          <p className="text-[11px] text-text-muted">Manager: manager1@fixify.com</p>
-          <p className="text-[11px] text-text-muted">Technician: tech.b1.1@fixify.com</p>
-          <p className="text-[11px] text-text-muted">Requester: requester1@fixify.com</p>
+          <p className="text-[11px] text-text-muted">Manager: wichai@fixify.com</p>
+          <p className="text-[11px] text-text-muted">Technician: prasit@fixify.com</p>
+          <p className="text-[11px] text-text-muted">Requester: nareerat@fixify.com</p>
         </div>
       </div>
     </div>
