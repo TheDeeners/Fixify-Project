@@ -83,19 +83,19 @@ export const AdminAssetsPage: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-background text-text-muted border-b border-border uppercase tracking-wider font-semibold">
               <tr>
-                <th className="p-4">รหัสทรัพย์สิน (Asset Code)</th>
-                <th className="p-4">ชื่ออุปกรณ์</th>
-                <th className="p-4">สถานที่ติดตั้ง</th>
-                <th className="p-4 text-right">การจัดการ</th>
+                <th className="px-4 py-2.5">รหัสทรัพย์สิน (Asset Code)</th>
+                <th className="px-4 py-2.5">ชื่ออุปกรณ์</th>
+                <th className="px-4 py-2.5">สถานที่ติดตั้ง</th>
+                <th className="px-4 py-2.5 text-right">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-text">
               {assets.map((a) => (
                 <tr key={a.id} className="hover:bg-background/40 transition-colors">
-                  <td className="p-4 font-mono font-semibold text-secondary">{a.assetCode}</td>
-                  <td className="p-4 font-semibold text-text">{a.name}</td>
-                  <td className="p-4 text-text-muted">{a.location?.name}</td>
-                  <td className="p-4 text-right">
+                  <td className="px-4 py-2.5 font-mono font-semibold text-secondary">{a.assetCode}</td>
+                  <td className="px-4 py-2.5 font-semibold text-text">{a.name}</td>
+                  <td className="px-4 py-2.5 text-text-muted">{a.location?.name}</td>
+                  <td className="px-4 py-2.5 text-right">
                     <button
                       onClick={() => handleDelete(a.id)}
                       className="text-xs text-rose-700 hover:bg-rose-50 p-1.5 rounded transition-colors"

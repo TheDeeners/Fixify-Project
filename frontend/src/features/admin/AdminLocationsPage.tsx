@@ -107,24 +107,24 @@ export const AdminLocationsPage: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-background text-text-muted border-b border-border uppercase tracking-wider font-semibold">
               <tr>
-                <th className="p-4">ชื่อสถานที่</th>
-                <th className="p-4">ประเภท</th>
-                <th className="p-4">สถานที่หลัก (Parent)</th>
-                <th className="p-4">หัวหน้าผู้รับผิดชอบ</th>
-                <th className="p-4 text-right">การจัดการ</th>
+                <th className="px-4 py-2.5">ชื่อสถานที่</th>
+                <th className="px-4 py-2.5">ประเภท</th>
+                <th className="px-4 py-2.5">สถานที่หลัก (Parent)</th>
+                <th className="px-4 py-2.5">หัวหน้าผู้รับผิดชอบ</th>
+                <th className="px-4 py-2.5 text-right">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-text">
               {locations.map((loc) => (
                 <tr key={loc.id} className="hover:bg-background/40 transition-colors">
-                  <td className="p-4 font-semibold text-text">{loc.name}</td>
-                  <td className="p-4">
+                  <td className="px-4 py-2.5 font-semibold text-text">{loc.name}</td>
+                  <td className="px-4 py-2.5">
                     <span className="text-[11px] bg-background text-text px-2 py-0.5 rounded font-mono border border-border">
                       {loc.type}
                     </span>
                   </td>
-                  <td className="p-4 text-text-muted">{loc.parent ? loc.parent.name : '-'}</td>
-                  <td className="p-4">
+                  <td className="px-4 py-2.5 text-text-muted">{loc.parent ? loc.parent.name : '-'}</td>
+                  <td className="px-4 py-2.5">
                     {loc.locationManager?.manager ? (
                       <span className="text-[11px] text-secondary font-medium bg-secondary/5 px-2.5 py-1 rounded-full border border-secondary/20">
                         {loc.locationManager.manager.name}
@@ -133,7 +133,7 @@ export const AdminLocationsPage: React.FC = () => {
                       <span className="text-[11px] text-text-light">ยังไม่กำหนด</span>
                     )}
                   </td>
-                  <td className="p-4 text-right space-x-2">
+                  <td className="px-4 py-2.5 text-right space-x-2">
                     <button
                       onClick={() => setAssignLocId(loc.id)}
                       className="text-xs bg-surface hover:bg-background text-text border border-border px-2.5 py-1 rounded font-medium transition-colors"

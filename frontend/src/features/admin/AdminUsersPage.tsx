@@ -95,29 +95,29 @@ export const AdminUsersPage: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-background text-text-muted border-b border-border uppercase tracking-wider font-semibold">
                 <tr>
-                  <th className="p-4">ชื่อ - นามสกุล</th>
-                  <th className="p-4">อีเมล</th>
-                  <th className="p-4">บทบาท (Role)</th>
-                  <th className="p-4">สังกัดหัวหน้า</th>
-                  <th className="p-4">สถานะบัญชี</th>
-                  <th className="p-4 text-right">การจัดการ</th>
+                  <th className="px-4 py-1.5">ชื่อ - นามสกุล</th>
+                  <th className="px-4 py-1.5">อีเมล</th>
+                  <th className="px-4 py-1.5">บทบาท (Role)</th>
+                  <th className="px-4 py-1.5">สังกัดหัวหน้า</th>
+                  <th className="px-4 py-1.5">สถานะบัญชี</th>
+                  <th className="px-4 py-1.5 text-right">การจัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-text">
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-background/40 transition-colors">
-                    <td className="p-4 font-semibold text-text">{u.name}</td>
-                    <td className="p-4 text-text-muted">{u.email}</td>
-                    <td className="p-4">
+                    <td className="px-4 py-1.5 font-semibold text-text">{u.name}</td>
+                    <td className="px-4 py-1.5 text-text-muted">{u.email}</td>
+                    <td className="px-4 py-1.5">
                       <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded font-medium bg-background text-text border border-border">
                         {u.role === 'ADMIN' && <Shield className="w-3 h-3 text-primary" />}
                         {u.role}
                       </span>
                     </td>
-                    <td className="p-4 text-text-muted">
+                    <td className="px-4 py-1.5 text-text-muted">
                       {u.manager ? u.manager.name : '-'}
                     </td>
-                    <td className="p-4">
+                    <td className="px-4 py-1.5">
                       {u.isActive ? (
                         <span className="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">
                           ใช้งานได้
@@ -128,7 +128,7 @@ export const AdminUsersPage: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-4 py-1.5 text-right">
                       <button
                         onClick={() => handleToggleActive(u.id, u.isActive)}
                         className={`text-xs px-3 py-1 rounded font-medium transition-colors ${
